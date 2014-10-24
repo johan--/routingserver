@@ -8,3 +8,4 @@ deploy:
   on:
     tags: true
     repo: dsachitano/routingserver
+    all_branches: true
