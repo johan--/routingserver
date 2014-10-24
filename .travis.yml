@@ -1,2 +1,8 @@
-script:
-  sh ./scripts/build.sh
+script: sh ./scripts/build.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: BatvNW1hMSbRHAzzzKWA2mUzmXGACDYR2bt/Jht87tMixaYp255zMeEkCIUzM/jsWUatsoHk5yLx86uHWvPxpty9D2zno/WgI/QkW2BbMeRDgypVDTm0F2z+YqHtO3EKe8up8l9Hc9QOWsVzoxy59NVsz3xPUepScEBM6YipbmM=
+  file: build.zip
+  on:
+    repo: dsachitano/routingserver
