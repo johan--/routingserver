@@ -22,7 +22,7 @@ RUN apt-get -y install unzip openjdk-7-jre-headless openjdk-7-jre
 # not really using this at the moment
 # uncomment if needed later
 # need to add to the build zip
-#ADD resources /tmp/resources
+ADD resources /tmp/resources
 
 # A little logic that will fetch the geoserver zip file if it
 # is not available locally in the resources dir and
