@@ -3,7 +3,7 @@ deploy:
   provider: releases
   api_key:
     secure: BatvNW1hMSbRHAzzzKWA2mUzmXGACDYR2bt/Jht87tMixaYp255zMeEkCIUzM/jsWUatsoHk5yLx86uHWvPxpty9D2zno/WgI/QkW2BbMeRDgypVDTm0F2z+YqHtO3EKe8up8l9Hc9QOWsVzoxy59NVsz3xPUepScEBM6YipbmM=
-  file: build.zip
+  file: geoserver_build.zip postgis_build.zip
   skip_cleanup: true
   on:
     tags: true
