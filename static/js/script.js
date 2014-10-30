@@ -107,6 +107,10 @@ function addIcons(computed_route) {
 
 }
 
+function showRouteDetails(computed_route) {
+    $("#route_description").html("<p>"+co);
+}
+
 // given a json object representing a route, and a featureGroup,
 // load the remote geojson for each leg of the route into the
 // featureGroup
@@ -114,7 +118,12 @@ function addRoute(computed_route, featureGroup) {
 
     addIcons(computed_route);
 
+    //showRouteDetails(computed_route);
+    $("#route_description").html("");
+
     for(var i=0; i< computed_route.routeLegs.length; i++) {
+
+        $("#route_description").append("<p id=\"leg"+i+"\"></p>");
 
         // fetch the geojson for this leg of the route
         $.ajax({
@@ -138,6 +147,13 @@ function addRoute(computed_route, featureGroup) {
                     myLayer.properties["desc"] = computed_route.desc;
                 }
                 map.fitBounds(allFeatures.getBounds());
+
+                var legLength = data["features"][0]["properties"]["length_miles"];
+                var legStart = computed_route.routeLegs[this.layerIndex]["startName"];
+                var legEnd = computed_route.routeLegs[this.layerIndex]["endName"];
+
+                 
+                 $("#leg"+this.layerIndex).html("Leg "+(this.layerIndex+1)+": "+legLength+" miles. "+legStart+" to "+legEnd);
 
             },
             error: function (xhr, ajaxOptions, thrownError) {
@@ -164,8 +180,11 @@ function loadData(inputData) {
         var desc = data[i]["desc"];
         var count = data[i]["stadiumCount"];
 
+        var msg = data[i]["routeLegs"][0]["startName"] + ", " + count + " stadiums";
+
         var fg = genNewFeatureGroup();         
-        $("#coolMenuList").append("<p><a id=\"route"+(i+1)+"\" href=\"#\">"+desc+"</a></p>");
+        $("#coolMenuList").append(
+            "<li role=\"presentation\"><a id=\"route"+(i+1)+"\" role=\"menuitem\" tabindex=\"-1\" href=\"#\">"+msg+"</a></li>");
         $("#route"+(i+1)).click({param1:data[i],param2:fg}, menuClickHandler);
     }
 

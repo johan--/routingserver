@@ -14,11 +14,11 @@ body {
 #sidebar {
     width: 50%;
     float:right;
-    background:steelblue;
     height:100vh;
     color: #ccc;
     padding:20px;
     box-sizing: border-box;
+    overflow: scroll; overflow-x:hidden;
 }
 
 .icon-circular {

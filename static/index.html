@@ -8,24 +8,29 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
     <link rel="stylesheet" href="css/style.css" type="text/css" />
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap/3.3.0/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+
+
   </head>
 
   <body>
     
 
     <div id="sidebar">
-        <h1>Select Route</h1>
-        <div id="coolMenuList">
-        </div>
-        <!-- <nav>
-            <ul class="menu">
-                <li>
-                    <a href="#" id="">Routes</a>
-                    <ul id="coolMenuList">
-                    </ul>
-                </li>
+        <h1 role="presentation" class="dropdown">
+            <a id="drop4" href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Select Route
+              <span class="caret"></span>
+            </a>
+            <ul id="coolMenuList" class="dropdown-menu" role="menu" aria-labelledby="drop4">
             </ul>
-        </nav> -->
+        </h1>
+
+        <div id="route_description"></div>
     </div>
 
     <div id="map"></div>
@@ -34,7 +39,9 @@
 
     <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" ></script>
+    <script src="https://cdn.jsdelivr.net/bootstrap/3.3.0/js/bootstrap.min.js"></script>
     <script src="js/script.js"> </script>
+
   </body>
 </html>
 
