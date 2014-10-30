@@ -165,7 +165,7 @@ function loadData(inputData) {
         var count = data[i]["stadiumCount"];
 
         var fg = genNewFeatureGroup();         
-        $("#coolMenuList").append("<li><a id=\"route"+(i+1)+"\" href=\"#\">"+desc+"</a></li>");
+        $("#coolMenuList").append("<p><a id=\"route"+(i+1)+"\" href=\"#\">"+desc+"</a></p>");
         $("#route"+(i+1)).click({param1:data[i],param2:fg}, menuClickHandler);
     }
 
