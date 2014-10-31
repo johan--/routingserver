@@ -65,22 +65,22 @@ function highlightFeature(e) {
 
 
 /* custom control */
-var info = L.control();
+// var info = L.control();
 
-info.onAdd = function (map) {
-    this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
-    this.update();
-    return this._div;
-};
+// info.onAdd = function (map) {
+//     this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+//     this.update();
+//     return this._div;
+// };
 
-// method that we will use to update the control based on feature properties passed
-info.update = function (props) {
-    this._div.innerHTML = '<h4>Route:</h4>' +  (props ?
-        '<b>' + props.desc + '</b><br />' + props.stadiumCount + ' different stadiums'
-        : 'Hover over a route');
-};
+// // method that we will use to update the control based on feature properties passed
+// info.update = function (props) {
+//     this._div.innerHTML = '<h4>Route:</h4>' +  (props ?
+//         '<b>' + props.desc + '</b><br />' + props.stadiumCount + ' different stadiums'
+//         : 'Hover over a route');
+// };
 
-info.addTo(map);
+// info.addTo(map);
 
 
 // when a layer is clicked, open a small popup with
@@ -197,9 +197,6 @@ function loadData(inputData) {
 
 };
 
-$("#mytable tr").click(function() {
-    $(this).toggleClass("highlight");
-});
 
 function clearCurrentLayers(featureGroup) {
     if (featureGroup == null) return;
@@ -238,9 +235,6 @@ function toggleLayer(id, featureGroup) {
     }
 }
 
-$('#mytable').find('tr').click( function(){
-  toggleLayer($(this).index());
-});
 
 
 // read json data file
@@ -249,12 +243,3 @@ $.getJSON( "routes_starting_july21.json", function( data ) {
 });
 
 
-$('nav li ul').hide().removeClass('fallback');
-$('nav li').hover(
-  function () {
-    $('ul', this).stop().slideDown(100);
-  },
-  function () {
-    $('ul', this).stop().slideUp(100);
-  }
-);
