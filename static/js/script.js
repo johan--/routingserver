@@ -12,12 +12,17 @@ L.tileLayer('http://{s}.tile.stamen.com/toner-lite/{z}/{x}/{y}.png', {
 
 var mapLayers = [];
 var allFeatures = L.featureGroup();
+var allMarkers = new L.FeatureGroup();
+map.addLayer(allMarkers);
+
+var currentFeatureGroup = null;
 
 function genNewFeatureGroup() {
     var fg = new L.featureGroup();
     fg.on('mouseover',highlightFeature);
     fg.on('mouseout',resetHighlight);
     fg.addTo(map);
+    currentFeatureGroup = fg;
     return fg;
 }
 
@@ -96,19 +101,17 @@ function addIcons(computed_route) {
     for (var i = 0; i < computed_route.routeLegs.length; i++) {
         startMarkerLatLong = computed_route.routeLegs[i]["startLatLong"].reverse();
         var htmlStartIcon = new L.divIcon({html:"<div class='icon-circular'>"+computed_route.routeLegs[i].startIconHtml+"</div>"});
-        var startMarker = new L.marker(startMarkerLatLong, {icon:htmlStartIcon}).addTo(map);
+        var startMarker = new L.marker(startMarkerLatLong, {icon:htmlStartIcon});//.addTo(map);
+        allMarkers.addLayer(startMarker);
 
         if (i == computed_route.routeLegs.length-1) {
             endMarkerLatLong = computed_route.routeLegs[i]["endLatLong"].reverse();
             var htmlEndIcon = new L.divIcon({html:"<div class='icon-circular'>"+computed_route.routeLegs[i].endIconHtml+"</div>"});
-            var endMarker = new L.marker(endMarkerLatLong, {icon:htmlEndIcon}).addTo(map);
+            var endMarker = new L.marker(endMarkerLatLong, {icon:htmlEndIcon});//.addTo(map);
+            allMarkers.addLayer(endMarker);
         } 
     }
 
-}
-
-function showRouteDetails(computed_route) {
-    $("#route_description").html("<p>"+co);
 }
 
 // given a json object representing a route, and a featureGroup,
@@ -116,9 +119,13 @@ function showRouteDetails(computed_route) {
 // featureGroup
 function addRoute(computed_route, featureGroup) {
 
+    clearCurrentLayers(featureGroup);
     addIcons(computed_route);
 
-    //showRouteDetails(computed_route);
+    map.panTo(allMarkers.getBounds().getCenter());
+    map.fitBounds(allMarkers.getBounds());
+
+
     $("#route_description").html("");
 
     for(var i=0; i< computed_route.routeLegs.length; i++) {
@@ -146,7 +153,7 @@ function addRoute(computed_route, featureGroup) {
                 } else {
                     myLayer.properties["desc"] = computed_route.desc;
                 }
-                map.fitBounds(allFeatures.getBounds());
+
 
                 var legLength = data["features"][0]["properties"]["length_miles"];
                 var legStart = computed_route.routeLegs[this.layerIndex]["startName"];
@@ -194,6 +201,17 @@ $("#mytable tr").click(function() {
     $(this).toggleClass("highlight");
 });
 
+function clearCurrentLayers(featureGroup) {
+    if (featureGroup == null) return;
+
+    for (var i = 0; i < mapLayers.length; i++) {
+        hideLayer(i, featureGroup);
+    }
+    //map.removeLayer(allMarkers);
+    allMarkers.clearLayers();
+    //featureGroup.clearLayers();
+    //mapLayers = [];
+}
 
 function showLayer(id, featureGroup) {
     var l = mapLayers[id];
@@ -201,7 +219,12 @@ function showLayer(id, featureGroup) {
 }
 function hideLayer(id,featureGroup) {
     var l = mapLayers[id];
+    if (allFeatures != null) {
+        allFeatures.removeLayer(l);
+    }
     featureGroup.removeLayer(l);
+    map.removeLayer(l);
+    //map.removeLayer(featureGroup);
 }
 
 function toggleLayer(id, featureGroup) {
