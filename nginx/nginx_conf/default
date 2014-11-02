@@ -9,7 +9,7 @@ server {
 	    }
 
 	location / {
-	    proxy_pass       http://data.thebaseballrun.com:8080;
+	    proxy_pass       http://geoserver:8080;
 
 
 	if ($request_method = 'OPTIONS') {
