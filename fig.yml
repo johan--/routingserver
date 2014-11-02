@@ -1,0 +1,19 @@
+postgis:
+  build: ./docker-postgis
+  ports: 
+    - "5432:5432"
+
+geoserver:
+  build: ./docker-geoserver
+  ports:
+    - "8080:8080"
+
+nginx:
+  build: ./nginx
+  ports:
+    - "80:80"
+  volumes:
+    - ./nginx/nginx_conf/default:/etc/nginx/sites-available/default
+    - ./nginx/logs:/var/log/nginx
+  links:
+    - geoserver:geoserver
