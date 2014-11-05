@@ -58,6 +58,8 @@ RUN /setup.sh
 ADD start-postgis.sh /start-postgis.sh
 RUN chmod 0755 /start-postgis.sh
 
+RUN service postgresql start && /bin/su postgres -c "createdb uploaded_data" && /bin/su postgres -c "psql -d uploaded_data -c \"CREATE EXTENSION postgis\"" && service postgresql stop
+
 ENTRYPOINT "/start-postgis.sh"
 USER postgres
 CMD "/start-postgis.sh"
