@@ -1,12 +1,21 @@
 postgis:
   build: ./docker-postgis
-  ports: 
+  ports:
     - "5432:5432"
 
 geoserver:
   build: ./docker-geoserver
   ports:
     - "8080:8080"
+  links:
+    - postgis:postgis_db
+
+javaapi:
+  build: ./java_app
+  ports:
+    - "8090:8090"
+  links:
+    - postgis:postgis_db
 
 nginx:
   build: ./nginx
@@ -15,5 +24,7 @@ nginx:
   volumes:
     - ./nginx/nginx_conf/default:/etc/nginx/sites-available/default
     - ./nginx/logs:/var/log/nginx
+    - ./static:/var/www/html/static
   links:
+    - javaapi:java_app
     - geoserver:geoserver
