@@ -135,6 +135,12 @@ public class HelloWorldResource {
             importFileToPostGIS(importFile);
         }
 
+        // using the incoming file name as table name is probably not a good idea.
+        // should generate some id for the geom table name, and maintain a table mapping
+        // ids to the incoming filenames, and other metadata.  could possibly use this
+        // for some kind of search functionality.  then the POST upload handler would
+        // return a path to the data as json (or whatever other format)
+
         return Response.status(200).build();
 
     }

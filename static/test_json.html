@@ -1,0 +1,234 @@
+
+
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Data Layer: Simple</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <style>
+   
+
+#map {
+  height: 300px;
+  width: 300px;
+}
+
+
+.icon-circular {
+  clip-path: circle(10px);
+}
+
+.highlight { background-color: red; }
+
+.info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+
+.info h4 {
+    margin: 0 0 5px;
+    color: #777;
+}
+
+#holder { border: 10px dashed #ccc; width: 300px; min-height: 300px; }
+#holder.hover { border: 10px dashed #0c0; }
+/*#holder img { display: block; margin: 10px auto; }
+*/#holder p { margin: 10px; font-size: 14px; }
+progress { width: auto; }
+progress:after { content: '%'; }
+.fail { background: #c00; padding: 2px; color: #fff; }
+.hidden { display: none !important;}
+
+    </style>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap/3.3.0/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+
+
+  </head>
+
+  <body>
+    
+
+<!--     <div id="sidebar">
+        <h1 role="presentation" class="dropdown">
+            <a id="drop4" href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Select Route
+              <span class="caret"></span>
+            </a>
+            <ul id="coolMenuList" class="dropdown-menu" role="menu" aria-labelledby="drop4">
+            </ul>
+        </h1>
+
+        <div id="route_description"></div>
+    </div> -->
+
+
+	<div class="container-fluid">
+	  <div class="row-fluid">
+
+	    <div class="span6" style="display: inline-block;">
+	      <div id="holder" ></div>
+	      <p id="upload" class="hidden">
+	      	<label>Drag & drop not supported, but you can still upload via this input field:<br><input type="file">
+	      	</label>
+	      </p>
+		  <p id="filereader">File API & FileReader API not supported</p>
+		  <p id="formdata">XHR2's FormData is not supported</p>
+		  <p id="progress">XHR2's upload progress isn't supported</p>
+		  <progress id="uploadprogress" min="0" max="100" value="0">0</progress>
+	    </div>
+
+	    <div class="span6" style="display: inline-block; position: relative; top: -14px;">
+	      <div id="map">
+	    </div>
+	  </div>
+	</div>
+
+  
+
+  <script>
+var holder = document.getElementById('holder'),
+    tests = {
+      filereader: typeof FileReader != 'undefined',
+      dnd: 'draggable' in document.createElement('span'),
+      formdata: !!window.FormData,
+      progress: "upload" in new XMLHttpRequest
+    }, 
+    support = {
+      filereader: document.getElementById('filereader'),
+      formdata: document.getElementById('formdata'),
+      progress: document.getElementById('progress')
+    },
+    acceptedTypes = {
+      'image/png': true,
+      'image/jpeg': true,
+      'image/gif': true
+    },
+    progress = document.getElementById('uploadprogress'),
+    fileupload = document.getElementById('upload');
+
+"filereader formdata progress".split(' ').forEach(function (api) {
+  if (tests[api] === false) {
+    support[api].className = 'fail';
+  } else {
+    // FFS. I could have done el.hidden = true, but IE doesn't support
+    // hidden, so I tried to create a polyfill that would extend the
+    // Element.prototype, but then IE10 doesn't even give me access
+    // to the Element object. Brilliant.
+    support[api].className = 'hidden';
+  }
+});
+
+function previewfile(file) {
+  
+    holder.innerHTML += '<p>Uploaded ' + file.name + ' ' + (file.size ? (file.size/1024|0) + 'K' : '');
+    console.log(file);
+  
+}
+
+function readfiles(files) {
+    //debugger;
+    var formData = tests.formdata ? new FormData() : null;
+    for (var i = 0; i < files.length; i++) {
+      if (tests.formdata) formData.append('file', files[i]);
+      previewfile(files[i]);
+    }
+
+    // now post a new XHR request
+    if (tests.formdata) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/java_api/hello-world');
+      xhr.onload = function() {
+        progress.value = progress.innerHTML = 100;
+      };
+
+      if (tests.progress) {
+        xhr.upload.onprogress = function (event) {
+          if (event.lengthComputable) {
+            var complete = (event.loaded / event.total * 100 | 0);
+            progress.value = progress.innerHTML = complete;
+          }
+        }
+      }
+
+      xhr.send(formData);
+    }
+}
+
+if (tests.dnd) { 
+  holder.ondragover = function () { this.className = 'hover'; return false; };
+  holder.ondragend = function () { this.className = ''; return false; };
+  holder.ondrop = function (e) {
+    this.className = '';
+    e.preventDefault();
+    readfiles(e.dataTransfer.files);
+  }
+} else {
+  fileupload.className = 'hidden';
+  fileupload.querySelector('input').onchange = function () {
+    readfiles(this.files);
+  };
+}
+
+</script>
+
+    
+
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" ></script>
+    <script src="https://cdn.jsdelivr.net/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+    <script> 
+
+    	// right now the map is loading a hardcoded path from geoserver.
+    	// using the incoming file name as table name is probably not a good idea.
+    	// should generate some id for the table name, and maintain a table mapping
+    	// ids to the incoming filenames, and other metadata.  could possibly use this
+    	// for some kind of search functionality.  then the POST upload handler would
+    	// return a path to the data as json (or whatever other format), to be used here
+    	// in place of the hardcoded url
+    	var geojsonurl = "/geoserver/topp/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=topp:12302_mlb_revised&maxFeatures=50&outputFormat=application/json";
+
+    	var map = L.map('map').setView([39.00, -75.09], 8);
+
+
+		L.tileLayer('http://{s}.tile.stamen.com/toner-lite/{z}/{x}/{y}.png', {
+		    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+		    maxZoom: 18
+		}).addTo(map);
+
+		$.ajax({
+            dataType: "json",
+            url: geojsonurl,
+            success: function(data) {
+
+                var myLayer = L.geoJson(data);
+                map.addLayer(myLayer);
+                map.fitBounds(myLayer.getBounds());
+              
+
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+              }
+        });
+
+    </script>
+
+  </body>
+</html>
+
+
+
+
