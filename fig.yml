@@ -9,11 +9,14 @@ geoserver:
     - "8080:8080"
   links:
     - postgis:postgis_db
+  volumes:
+    - ./scripts/tiles:/media/rasters
 
 javaapi:
   build: ./java_app
   ports:
     - "8090:8090"
+    - "5005:5005"
   links:
     - postgis:postgis_db
 

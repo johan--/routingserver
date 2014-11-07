@@ -5,28 +5,22 @@ package com.thebaseballrun.webui.resources;
 import com.google.common.base.Optional;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.Lists;
-import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
-import com.sun.jersey.multipart.FormDataParam;
 import com.thebaseballrun.webui.core.Saying;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.FileSystems;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Path("/hello-world")
@@ -55,9 +49,6 @@ public class HelloWorldResource {
     private String handleInputStream(java.nio.file.Path tmpDir, InputStream fileInputStream, String temp_upload_file_name) throws IOException, InterruptedException {
         LOGGER.info("HANDLING INPUT FILE: {}", temp_upload_file_name);
 
-        //final String temp_upload_file_name = contentDispositionHeader.getFileName();
-        //final String temp_upload_file_name = UUID.randomUUID().toString();
-        //java.nio.file.Path tmpDir = Files.createTempDirectory("temp_geo_data");
         java.nio.file.Path outputPath = Paths.get(tmpDir.toAbsolutePath().toString(), temp_upload_file_name);
 
         Files.copy(fileInputStream, outputPath);
@@ -68,7 +59,83 @@ public class HelloWorldResource {
         return fileWeSaved;
     }
 
-    private void importFileToPostGIS(String fileWeSaved) throws IOException, InterruptedException {
+    private void importFileToPostGISshp2pgsql(String fileWeSaved) throws IOException, InterruptedException {
+        // now build up the ogr2ogr command
+        // ogr2ogr -f "PostgreSQL" PG:"host=yourhost user=youruser dbname=yourdb
+        //                              password=yourpass" inputfilename.kml
+        List<String> args = new ArrayList<String>();
+        args.add ("shp2pgsql"); // command name
+        args.add ("-W");
+        args.add ("latin1");
+        args.add (fileWeSaved);
+
+        ProcessBuilder shp2pgsql = new ProcessBuilder (args);
+        //shp2pgsql.redirectErrorStream(true);
+
+        // export PGPASSWORD=docker
+        // psql -h postgis_db -U docker -w uploaded_data
+        List<String> psqlArgs = new ArrayList<String>();
+        psqlArgs.add("psql");
+        psqlArgs.add ("-h");
+        psqlArgs.add ("postgis_db");
+        psqlArgs.add("-U");
+        psqlArgs.add("docker");
+        psqlArgs.add("-w");
+        psqlArgs.add("uploaded_data");
+        ProcessBuilder psqlImport = new ProcessBuilder(psqlArgs);
+        psqlImport.redirectErrorStream(true);
+        psqlImport.environment().put("PGPASSWORD", "docker");
+
+        Process psqlProcess = psqlImport.start();
+
+
+
+        OutputStream theInputForPsql = psqlProcess.getOutputStream();
+
+        Process shp2Process = shp2pgsql.start();
+        //int otherProcessResult = shp2Process.waitFor();
+        //int processResult = psqlProcess.waitFor();
+
+        InputStream theShp2PsqlResults = shp2Process.getInputStream();
+
+        InputStreamReader resultsReader = new InputStreamReader(theShp2PsqlResults);
+        OutputStreamWriter sqlWriter = new OutputStreamWriter(theInputForPsql);
+
+
+        // make sure the buffer is big enough to hold long INSERT commands.
+        // psql would fail if we don't write whole lines at a time.
+        BufferedReader bufferedReader = new BufferedReader(resultsReader, 1024*128);
+        BufferedWriter bufferedWriter = new BufferedWriter(sqlWriter, 1024*128);
+
+        int count = 0;
+        String inLine;
+        while ((inLine = bufferedReader.readLine()) != null) {
+            //LOGGER.info("Read in {} chars from sql dump: loop {}", inLine.length(), ++count);
+            bufferedWriter.write(inLine);
+        }
+
+        bufferedWriter.flush();
+        bufferedWriter.close();
+        bufferedReader.close();
+
+
+        // preint out the command output
+        BufferedReader is;  // reader for output of process
+        String line;
+        // getInputStream gives an Input stream connected to
+        // the process standard output. Just use it to make
+        // a BufferedReader to readLine() what the program writes out.
+        is = new BufferedReader(new InputStreamReader(psqlProcess.getInputStream()), 1024*1024);
+
+        StringBuilder commandOutput = new StringBuilder("");
+        while ((line = is.readLine()) != null)
+            commandOutput.append(line);
+
+        LOGGER.info("Result of command {}: {}", args.toString(), commandOutput.toString());
+
+    }
+
+    private void importFileToPostGISogr2ogr(String fileWeSaved) throws IOException, InterruptedException {
         // now build up the ogr2ogr command
         // ogr2ogr -f "PostgreSQL" PG:"host=yourhost user=youruser dbname=yourdb
         //                              password=yourpass" inputfilename.kml
@@ -88,8 +155,6 @@ public class HelloWorldResource {
         Process p = pb.start();
         int processResult = p.waitFor();
 
-
-        // preint out the command output
         BufferedReader is;  // reader for output of process
         String line;
         // getInputStream gives an Input stream connected to
@@ -132,7 +197,20 @@ public class HelloWorldResource {
 
 
         for (String importFile : filesWeCanImport) {
-            importFileToPostGIS(importFile);
+            String extension = FilenameUtils.getExtension(importFile);
+
+            // if we get a shp file, use shp2pgsql instead of ogr2ogr
+            if (extension.toLowerCase().equals("shp")) {
+                try {
+                    importFileToPostGISshp2pgsql(importFile);
+                }
+                catch (Exception ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                    throw ex;
+                }
+            } else {
+                importFileToPostGISogr2ogr(importFile);
+            }
         }
 
         // using the incoming file name as table name is probably not a good idea.

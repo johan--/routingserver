@@ -12,7 +12,7 @@ server {
     	rewrite /java_api/(.+) /$1 break;
     	proxy_pass        http://java_app:8090/;
 
-    	client_max_body_size 20M;
+    	client_max_body_size 200M;
 
     	if ($request_method = 'OPTIONS') {
 			add_header 'Access-Control-Allow-Origin' '*';
